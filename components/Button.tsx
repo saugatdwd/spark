@@ -1,19 +1,18 @@
+import { borderRadius, colors, spacing, typography } from '@/utils/theme';
 import React from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  TouchableOpacity, 
-  ActivityIndicator, 
-  ViewStyle, 
-  TextStyle,
+import {
+  ActivityIndicator,
   Platform,
+  StyleSheet,
+  Text,
+  TextStyle,
+  TouchableOpacity,
+  ViewStyle,
 } from 'react-native';
-import { colors, spacing, typography, borderRadius } from '@/utils/theme';
-import Animated, { 
-  useAnimatedStyle, 
-  useSharedValue, 
-  withSpring,
-  withTiming,
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring
 } from 'react-native-reanimated';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
