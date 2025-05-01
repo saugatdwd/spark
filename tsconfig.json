@@ -3,7 +3,13 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      // "@spark/core": ["./packages/core/*"],
+      "@spark/core/*": ["./packages/core/*"],
+      // "@spark/typescript-config": ["./packages/typescript-config/*"],
+      "@spark/typescript-config/*": ["./packages/typescript-config/*"],
+      // "@spark/eslint-config": ["./packages/eslint-config/*"],
+      "@spark/eslint-config/*": ["./packages/eslint-config/*"]
     }
   },
   "include": [
@@ -11,6 +17,6 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "nativewind-env.d.ts"
+    "nativewind-env.d.ts",
   ]
 }

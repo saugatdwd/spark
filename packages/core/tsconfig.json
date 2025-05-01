@@ -1,0 +1,11 @@
+{
+  "extends": "@spark/typescript-config/tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}

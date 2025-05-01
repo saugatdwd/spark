@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, ImageBackground, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { colors, spacing, typography } from '@/utils/theme';
 import Button from '@/components/Button';
 import Text from '@/components/Text';
@@ -32,8 +32,8 @@ export default function WelcomeScreen() {
         withTiming(1, { duration: 300, easing: Easing.bezier(0.25, 0.1, 0.25, 1) }),
         withDelay(1000, withTiming(1, { duration: 100 }))
       ),
-      -1, // Infinite repeats
-      true // Reverse animation
+      -1, 
+      true 
     );
     
     rotate.value = withRepeat(
@@ -101,8 +101,10 @@ export default function WelcomeScreen() {
           <Button
             title="Create Account"
             size="large"
-            style={styles.signupButton}
-            onPress={() => {}}
+            textStyle={styles.signupButton}
+            onPress={() => {
+              router.push('/(auth)/signup');
+            }}
           />
         </Link>
         
@@ -149,6 +151,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.m,
     fontFamily: typography.fonts.heading,
     fontSize: 48,
+    padding:spacing.s,
   },
   subtitle: {
     opacity: 0.8,
@@ -165,7 +168,7 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   signupButton: {
-    backgroundColor: colors.white,
+    color: colors.white,
   },
   terms: {
     marginTop: spacing.m,

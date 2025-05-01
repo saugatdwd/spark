@@ -1,0 +1,12 @@
+{
+  "name": "@spark/typescript-config",
+  "version": "0.0.1",
+  "license": "MIT",
+  "files": [
+    "tsconfig.base.json",
+    "tsconfig.react.json",
+    "tsconfig.react-library.json",
+    "tsconfig.vite.json",
+    "tsconfig.native.json"
+  ]
+}

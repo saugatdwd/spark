@@ -1,5 +1,6 @@
 import Button from '@/components/Button';
-import { Link, Stack } from 'expo-router';
+import 'react-native-reanimated';
+import { Link, router, Stack } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 export default function NotFoundScreen() {
@@ -8,10 +9,10 @@ export default function NotFoundScreen() {
       <Stack.Screen options={{ title: 'Oops!' }} />
       <View style={styles.container}>
         <Text style={styles.text}>This screen doesn't exist.</Text>
-        <Link href="/(auth)/login" style={styles.link}>
+        <Link href="/(auth)/welcome" style={styles.link}>
           <Text>Go to home screen!</Text>
         </Link>
-        <Button title='Hello ' onPress={() => console.log('hello')}/>
+        <Button title='Hello ' onPress={() => router.push('/(auth)/login')}/>
       </View>
     </>
   );

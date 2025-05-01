@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { Link, router } from 'expo-router';
-import { colors, spacing } from '@/utils/theme';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import Text from '@/components/Text';
 import { useAuth } from '@/context/AuthContext';
-import { ArrowLeft, Mail, Lock } from 'lucide-react-native';
 import { isValidEmail } from '@/utils/helpers';
+import { colors, spacing } from '@/utils/theme';
+import { Link, router } from 'expo-router';
+import { ArrowLeft, Lock, Mail } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -17,6 +17,10 @@ export default function LoginScreen() {
   const [loginError, setLoginError] = useState('');
   
   const { signIn, isLoading } = useAuth();
+
+  // const {mutate , isPending: isLoading} = useEnhancedMutations((client, params) => {
+  //   return client.post('/auth/login', params);
+  // })
   
   const validateForm = () => {
     let isValid = true;
@@ -47,15 +51,13 @@ export default function LoginScreen() {
     return isValid;
   };
   
-  const handleLogin = async () => {
+  const handleLogin = async (data) => {
     if (!validateForm()) return;
-    
-    try {
-      await signIn(email, password);
-      // Navigation handled in the signIn function
-    } catch (error) {
-      setLoginError('Invalid email or password. Please try again.');
-    }
+    console.log(data)
+  //  mutate({
+  //   email: data.email,
+  //   password: data.password
+  //  })
   };
   
   // Demo login (for testing)
@@ -78,7 +80,7 @@ export default function LoginScreen() {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => router.back()}
+            onPress={() => router.push('/(auth)/welcome')}
           >
             <ArrowLeft size={24} color={colors.neutral[800]} />
           </TouchableOpacity>
@@ -130,7 +132,7 @@ export default function LoginScreen() {
           
           <Button
             title="Log In"
-            onPress={handleLogin}
+            onPress={() => handleLogin}
             loading={isLoading}
             size="large"
             style={styles.loginButton}

@@ -1,0 +1,8 @@
+{
+    "name": "spark-monorepo",
+    "private": true,
+    "workspaces": [
+      "packages/*"
+    ]
+  }
+  

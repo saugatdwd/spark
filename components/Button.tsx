@@ -1,3 +1,8 @@
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring
+} from 'react-native-reanimated';
 import { borderRadius, colors, spacing, typography } from '@/utils/theme';
 import React from 'react';
 import {
@@ -9,11 +14,6 @@ import {
   TouchableOpacity,
   ViewStyle,
 } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring
-} from 'react-native-reanimated';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 type ButtonSize = 'small' | 'medium' | 'large';

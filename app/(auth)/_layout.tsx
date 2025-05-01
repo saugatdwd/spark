@@ -1,3 +1,4 @@
+import { ApiClientProvider, queryClient } from '@/packages/core/src';
 import { Stack } from 'expo-router';
 
 export default function AuthLayout() {
