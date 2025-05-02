@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   title: {
-    marginBottom: spacing.m,
+    paddingBottom: spacing.l,
     fontFamily: typography.fonts.heading,
     fontSize: 48,
   },
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   signupButton: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.primary[500],
   },
   terms: {
     marginTop: spacing.m,

@@ -1,0 +1,5 @@
+<manifest>
+  <application
+    android:networkSecurityConfig="@xml/network_security_config">
+  </application>
+</manifest>
