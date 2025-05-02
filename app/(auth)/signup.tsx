@@ -1,105 +1,50 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { router } from 'expo-router';
-import { colors, spacing } from '@/utils/theme';
 import Button from '@/components/Button';
-import Input from '@/components/Input';
+import Field from '@/components/Field';
 import Text from '@/components/Text';
-import { useAuth } from '@/context/AuthContext';
-import { ArrowLeft, Mail, Lock, User, Calendar } from 'lucide-react-native';
-import { isValidEmail } from '@/utils/helpers';
+import { ErrorResponse } from '@/constants/global.type';
+import { useCustomMutations } from '@/hooks/useMutations';
+import { signupSchema, SignUpType } from '@/schemas/signup.schama';
+import { colors, spacing } from '@/utils/theme';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { router } from 'expo-router';
+import { ArrowLeft } from 'lucide-react-native';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { z } from 'zod';
 
 export default function SignupScreen() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [age, setAge] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  
-  const [nameError, setNameError] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [ageError, setAgeError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  const [signupError, setSignupError] = useState('');
-  
-  const { signUp, isLoading } = useAuth();
-  
-  const validateForm = () => {
-    let isValid = true;
-    
-    // Reset errors
-    setNameError('');
-    setEmailError('');
-    setAgeError('');
-    setPasswordError('');
-    setConfirmPasswordError('');
-    setSignupError('');
-    
-    // Validate name
-    if (!name) {
-      setNameError('Name is required');
-      isValid = false;
+  const form = useForm<SignUpType>({
+    resolver: zodResolver(signupSchema),
+  });
+  const { mutate } = useCustomMutations(
+    (client, params) => {
+      return client.post('/users', params);
+    },
+    {
+      onSuccess: () => {
+        router.push('/login');
+      },
+      onError: (error: ErrorResponse) => {
+        console.log(error);
+      },
     }
-    
-    // Validate email
-    if (!email) {
-      setEmailError('Email is required');
-      isValid = false;
-    } else if (!isValidEmail(email)) {
-      setEmailError('Please enter a valid email');
-      isValid = false;
-    }
-    
-    // Validate age
-    if (!age) {
-      setAgeError('Age is required');
-      isValid = false;
-    } else {
-      const ageNum = parseInt(age);
-      if (isNaN(ageNum) || ageNum < 18 || ageNum > 120) {
-        setAgeError('You must be at least 18 years old');
-        isValid = false;
-      }
-    }
-    
-    // Validate password
-    if (!password) {
-      setPasswordError('Password is required');
-      isValid = false;
-    } else if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
-      isValid = false;
-    }
-    
-    // Validate confirm password
-    if (password !== confirmPassword) {
-      setConfirmPasswordError('Passwords do not match');
-      isValid = false;
-    }
-    
-    return isValid;
-  };
-  
-  const handleSignup = async () => {
-    if (!validateForm()) return;
-    
-    try {
-      await signUp({
-        name,
-        email,
-        age: parseInt(age),
-        gender: 'other', // Default, will be updated in profile setup
-        lookingFor: 'everyone', // Default, will be updated in profile setup
-        interests: [], // Will be updated in profile setup
-        photos: ['https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg'], // Default placeholder
-        bio: '', // Will be updated in profile setup
-      });
-      // Navigation is handled in the signUp function
-    } catch (error) {
-      setSignupError('Could not create account. Please try again.');
-    }
-  };
+  );
+
+  const handleSignup = form.handleSubmit((data) => {
+    mutate({
+      name: data.full_name,
+      ...data,
+
+    });
+  });
   
   return (
     <KeyboardAvoidingView
@@ -115,86 +60,100 @@ export default function SignupScreen() {
           >
             <ArrowLeft size={24} color={colors.neutral[800]} />
           </TouchableOpacity>
-          
+
           <Text variant="heading2" style={styles.title}>
             Create Account
           </Text>
-          
-          <Text variant="body" color={colors.neutral[600]} style={styles.subtitle}>
+
+          <Text
+            variant="body"
+            color={colors.neutral[600]}
+            style={styles.subtitle}
+          >
             Sign up to start finding meaningful connections
           </Text>
         </View>
-        
+
         <View style={styles.formContainer}>
-          {signupError ? (
-            <View style={styles.errorContainer}>
-              <Text variant="body" color={colors.error[500]}>
-                {signupError}
-              </Text>
-            </View>
-          ) : null}
-          
-          <Input
-            label="Full Name"
-            placeholder="Enter your name"
-            value={name}
-            onChangeText={setName}
-            error={nameError}
-            leftIcon={<User size={20} color={colors.neutral[500]} />}
+          <Field
+            control={form.control}
+            formField={{
+              name: 'full_name',
+              label: 'Full Name',
+              placeholder: 'Enter your name',
+              input_type: 'text',
+              variant: 'box',
+            }}
           />
-          
-          <Input
-            label="Email"
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={emailError}
-            leftIcon={<Mail size={20} color={colors.neutral[500]} />}
+
+          <Field
+            control={form.control}
+            formField={{
+              name: 'email',
+              label: 'Email',
+              placeholder: 'Enter your email',
+              input_type: 'text',
+              variant: 'box',
+            }}
           />
-          
-          <Input
-            label="Age"
-            placeholder="Enter your age"
-            value={age}
-            onChangeText={setAge}
-            keyboardType="number-pad"
-            error={ageError}
-            leftIcon={<Calendar size={20} color={colors.neutral[500]} />}
+
+          <Field
+            control={form.control}
+            formField={{
+              name: 'dob',
+              label: 'Date of Birth',
+              placeholder: 'Select date',
+              input_type: 'date',
+              variant: 'box',
+            }}
           />
-          
-          <Input
-            label="Password"
-            placeholder="Create a password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            error={passwordError}
-            leftIcon={<Lock size={20} color={colors.neutral[500]} />}
+          <Field
+            control={form.control}
+            formField={{
+              name: 'gender',
+              label: 'Gender',
+              input_type: 'radio',
+              options: [
+                { label: 'Male', value: 'male' },
+                { label: 'Female', value: 'female' },
+                { label: 'Other', value: 'other' },
+              ],
+            }}
           />
-          
-          <Input
-            label="Confirm Password"
-            placeholder="Confirm your password"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-            error={confirmPasswordError}
-            leftIcon={<Lock size={20} color={colors.neutral[500]} />}
+
+          <Field
+            control={form.control}
+            formField={{
+              name: 'password',
+              label: 'Password',
+              placeholder: 'Enter your password',
+              input_type: 'password',
+              variant: 'box',
+            }}
           />
-          
+
+          <Field
+            control={form.control}
+            formField={{
+              name: 'confirm_password',
+              label: 'Confirm Password',
+              placeholder: 'Confirm your password',
+              input_type: 'password',
+              variant: 'box',
+            }}
+          />
+
           <Button
             title="Create Account"
             onPress={handleSignup}
-            loading={isLoading}
             size="large"
             style={styles.signupButton}
           />
-          
+
           <View style={styles.termsContainer}>
             <Text variant="caption" center color={colors.neutral[600]}>
-              By signing up, you agree to our Terms of Service and Privacy Policy
+              By signing up, you agree to our Terms of Service and Privacy
+              Policy
             </Text>
           </View>
         </View>
@@ -213,7 +172,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
   },
   header: {
-    padding: spacing.xl,
+    paddingHorizontal: spacing.xl,
     paddingTop: spacing.xxl + spacing.s,
   },
   backButton: {
@@ -226,7 +185,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.m,
   },
   formContainer: {
-    padding: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.s,
   },
   errorContainer: {
     backgroundColor: colors.error[50],
