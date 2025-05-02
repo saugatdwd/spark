@@ -39,7 +39,6 @@ export default function SignupScreen() {
   );
 
   const handleSignup = form.handleSubmit((data) => {
-    console.log(data)
     mutate({
       name: data.full_name,
       ...data,
@@ -47,8 +46,6 @@ export default function SignupScreen() {
     });
   });
   
-  console.log(form.formState.errors);
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
