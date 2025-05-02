@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { Link, router } from 'expo-router';
-import { colors, spacing } from '@/utils/theme';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import Text from '@/components/Text';
+import { ErrorResponse } from '@/constants/global.type';
 import { useAuth } from '@/context/AuthContext';
-import { ArrowLeft, Mail, Lock } from 'lucide-react-native';
+import { useCustomMutations } from '@/hooks/useMutations';
 import { isValidEmail } from '@/utils/helpers';
+import { colors, spacing } from '@/utils/theme';
+import { Link, router } from 'expo-router';
+import { ArrowLeft, Lock, Mail } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -18,6 +20,19 @@ export default function LoginScreen() {
   
   const { signIn, isLoading } = useAuth();
   
+  const {mutate} = useCustomMutations((client, params) => {
+    return client.post('auth/login', params);
+  }, {
+    onSuccess: () => {
+      
+      router.push('/settings')
+    },
+    onError: (error : ErrorResponse) => {
+        setLoginError(error?.response?.data?.error.message)
+    }
+  }) 
+
+
   const validateForm = () => {
     let isValid = true;
     
@@ -48,10 +63,13 @@ export default function LoginScreen() {
   };
   
   const handleLogin = async () => {
+    console.log("herreee")
     if (!validateForm()) return;
-    
     try {
-      await signIn(email, password);
+      mutate({
+        email: email,
+        password: password
+      })
       // Navigation handled in the signIn function
     } catch (error) {
       setLoginError('Invalid email or password. Please try again.');

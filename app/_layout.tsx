@@ -8,6 +8,8 @@ import { PlayfairDisplay_400Regular, PlayfairDisplay_700Bold } from '@expo-googl
 import { SplashScreen } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from '@/context/AuthContext';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '@/lib/react-query';
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -40,12 +42,14 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthProvider>
+        <QueryClientProvider client={queryClient}>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
           <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
           <Stack.Screen name="+not-found" options={{ animation: 'slide_from_right' }} />
         </Stack>
         <StatusBar style="auto" />
+        </QueryClientProvider>
       </AuthProvider>
     </GestureHandlerRootView>
   );

@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.xl,
     borderRadius: borderRadius.m,
     borderWidth: 1,
-    borderColor: colors.error[200],
+    borderColor: colors.error[500],
     backgroundColor: colors.error[50],
   },
   dangerItem: {
