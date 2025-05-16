@@ -23,6 +23,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3893442c-5088-4bba-bd6a-8d49cb928d7e"
+      }
+    },
+    "owner": "saugatdawadi"
   }
 }
