@@ -23,6 +23,9 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "android": {
+      "package": "com.saugatdwd.sparkdatingapp"
     }
   }
 }

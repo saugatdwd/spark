@@ -159,6 +159,25 @@ export const borderRadius = {
   round: 9999,
 };
 
+export const fontSizes = {
+  xs: 12,
+  s: 14,
+  m: 16,
+  l: 18,
+  xl: 20,
+  xxl: 24,
+  xxxl: 30,
+};
+
+export const fontWeights = {
+  normal: 'normal',
+  thin: 'thin',
+  light: 'light',
+  medium: 'medium',
+  bold: 'bold',
+  ultralight: 'ultralight'
+};
+
 export const animation = {
   durations: {
     fast: 200,

@@ -22,13 +22,13 @@ export default function DiscoverScreen() {
   
   useEffect(() => {
     
-    if (!user) {
-      router.replace('/(auth)/welcome');
-      return;
-    }
+    // if (!user) {
+    //   router.replace('/(auth)/welcome');
+    //   return;
+    // }
     
     // Fetch potential matches
-    const matches = getPotentialMatches(user.id);
+    const matches = getPotentialMatches(user?.id);
     setPotentialMatches(matches);
     setLoading(false);
     

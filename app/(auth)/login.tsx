@@ -10,6 +10,7 @@ import { Link, router } from 'expo-router';
 import { ArrowLeft, Lock, Mail } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -17,18 +18,20 @@ export default function LoginScreen() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [loginError, setLoginError] = useState('');
+
   
-  const { signIn, isLoading } = useAuth();
+  const { signIn } = useAuth();
   
-  const {mutate} = useCustomMutations((client, params) => {
+  const {mutate , isPending: isLoading} = useCustomMutations((client, params) => {
     return client.post('auth/login', params);
   }, {
-    onSuccess: () => {
-      
-      router.push('/settings')
+    onSuccess: (res) => {
+      console.log(res)
+       AsyncStorage.setItem('token', res?.data?.token);
+      router.push('/(tabs)/settings')
     },
     onError: (error : ErrorResponse) => {
-        setLoginError(error?.response?.data?.error.message)
+        setLoginError(error?.response?.data?.error.message || '') 
     }
   }) 
 

@@ -1,203 +1,512 @@
-import Button from '@/components/Button';
-import Field from '@/components/Field';
-import Text from '@/components/Text';
-import { ErrorResponse } from '@/constants/global.type';
-import { useCustomMutations } from '@/hooks/useMutations';
-import { signupSchema, SignUpType } from '@/schemas/signup.schama';
-import { colors, spacing } from '@/utils/theme';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { router } from 'expo-router';
-import { ArrowLeft } from 'lucide-react-native';
-import React from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
+  Alert,
+  Image,
+  SafeAreaView,
   ScrollView,
-  StyleSheet,
+  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { z } from 'zod';
 
-export default function SignupScreen() {
+import Field from '@/components/Field';
+import FormStep from '@/components/partial/signup/form-step';
+import LocationPicker from '@/components/partial/signup/location-picker';
+import PreferenceSelector from '@/components/partial/signup/preference-selector';
+import { signupSchema, SignUpType } from '@/schemas/signup.schama';
+import { useSignupStyles } from '@/styles/signup.styles';
+import { colors, fontSizes, spacing } from '@/utils/theme';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ChevronLeft } from 'lucide-react-native';
+import { Controller, useForm } from 'react-hook-form';
+import { useCustomMutations } from '@/hooks/useMutations';
+import { router } from 'expo-router';
+import { ErrorResponse } from '@/constants/global.type';
+
+type Preference = 'men' | 'women' | 'everyone';
+
+const SignUp = () => {
+  const styles = useSignupStyles;
   const form = useForm<SignUpType>({
     resolver: zodResolver(signupSchema),
+    mode: 'onTouched',
+    defaultValues: { full_name: '' },
   });
-  const { mutate } = useCustomMutations(
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    dob: null as Date | null,
+    password: '',
+    confirmPassword: '',
+    location: '',
+    profilePicture: null as any,
+    preference: 'everyone' as Preference,
+  });
+
+  const stepFields: Record<number, (keyof SignUpType)[]> = {
+    0: ['full_name', 'email'],
+    1: ['dob'],
+    2: ['password', 'confirm_password'],
+    3: ['location'],
+    4: ['profile_picture'],
+    5: ['preference'],
+  };
+
+  const goToNextStep = async () => {
+    const fieldsToValidate = stepFields[currentStep];
+    const isValid = await form.trigger(fieldsToValidate);
+    if (isValid) {
+      setCurrentStep((prev) => prev + 1);
+    }
+  };
+  const goToPreviousStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const { mutate, isPending } = useCustomMutations(
     (client, params) => {
       return client.post('/users', params);
     },
     {
-      onSuccess: () => {
-        router.push('/login');
+      onSuccess: async () => {
+        Alert.alert('Sign up successful!', 'Welcome to the dating app!');
+        router.push('/(auth)/login');
       },
       onError: (error: ErrorResponse) => {
-        console.log(error);
+        console.log(error.response.data.error.message || '');
       },
     }
   );
 
-  const handleSignup = form.handleSubmit((data) => {
+  const handleSubmit = (data: SignUpType) => {
     mutate({
-      name: data.full_name,
+      name: data?.full_name,
       ...data,
-
     });
-  });
-  
-  return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <ArrowLeft size={24} color={colors.neutral[800]} />
-          </TouchableOpacity>
+  };
 
-          <Text variant="heading2" style={styles.title}>
-            Create Account
+  // Compute progress percentage
+  const progress = ((currentStep + 1) / 6) * 100;
+
+  const renderHeader = () => (
+    <View style={styles.header}>
+      {currentStep > 0 && (
+        <TouchableOpacity style={styles.backButton} onPress={goToPreviousStep}>
+          <Text style={{ color: colors.primary[500], display: 'flex' }}>
+            <ChevronLeft /> Back
           </Text>
+        </TouchableOpacity>
+      )}
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginBottom: spacing.m,
+        }}
+      >
+        <Text style={{ fontSize: fontSizes.xl, fontWeight: 'bold' }}>
+          Let's begin to feel that spark
+        </Text>
+      </View>
+    </View>
+  );
 
+  const renderProgressBar = () => (
+    <View style={{ paddingHorizontal: spacing.xl, marginBottom: spacing.m }}>
+      <View
+        style={{
+          width: '100%',
+          height: 4,
+          backgroundColor: colors.neutral[200],
+          borderRadius: 2,
+        }}
+      >
+        <View
+          style={{
+            height: '100%',
+            width: `${progress}%`,
+            backgroundColor: colors.primary[200],
+            borderRadius: 2,
+          }}
+        />
+      </View>
+    </View>
+  );
+
+  const renderFooter = () => (
+    <View style={{ padding: spacing.xl }}>
+      {currentStep < 5 ? (
+        <TouchableOpacity
+          style={{
+            backgroundColor: colors.primary[600],
+            borderRadius: 8,
+            padding: spacing.m,
+            alignItems: 'center',
+          }}
+          onPress={goToNextStep}
+        >
           <Text
-            variant="body"
-            color={colors.neutral[600]}
-            style={styles.subtitle}
+            style={{
+              color: colors.white,
+              fontWeight: 'semibold',
+              fontSize: fontSizes.m,
+            }}
           >
-            Sign up to start finding meaningful connections
+            Continue
           </Text>
-        </View>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={{
+            backgroundColor: colors.primary[500],
+            borderRadius: 8,
+            padding: spacing.m,
+            alignItems: 'center',
+          }}
+          onPress={form.handleSubmit(handleSubmit)}
+        >
+          <Text
+            style={{
+              color: colors.white,
+              fontWeight: 'semibold',
+              fontSize: fontSizes.m,
+            }}
+          >
+            {isPending ? 'Signing Up...' : ' Complete Sign Up'}
+          </Text>
+        </TouchableOpacity>
+      )}
 
-        <View style={styles.formContainer}>
-          <Field
-            control={form.control}
-            formField={{
-              name: 'full_name',
-              label: 'Full Name',
-              placeholder: 'Enter your name',
-              input_type: 'text',
-              variant: 'box',
+      {/* Step indicator dots */}
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          marginTop: spacing.xl,
+          gap: spacing.xs,
+        }}
+      >
+        {[0, 1, 2, 3, 4, 5].map((step) => (
+          <View
+            key={step}
+            style={{
+              width: step === currentStep ? 16 : 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor:
+                step === currentStep
+                  ? colors.primary[200]
+                  : step < currentStep
+                  ? colors.secondary[500]
+                  : colors.neutral[300],
             }}
           />
+        ))}
+      </View>
+    </View>
+  );
 
-          <Field
-            control={form.control}
-            formField={{
-              name: 'email',
-              label: 'Email',
-              placeholder: 'Enter your email',
-              input_type: 'text',
-              variant: 'box',
-            }}
-          />
 
-          <Field
-            control={form.control}
-            formField={{
-              name: 'dob',
-              label: 'Date of Birth',
-              placeholder: 'Select date',
-              input_type: 'date',
-              variant: 'box',
-            }}
-          />
-          <Field
-            control={form.control}
-            formField={{
-              name: 'gender',
-              label: 'Gender',
-              input_type: 'radio',
-              options: [
-                { label: 'Male', value: 'male' },
-                { label: 'Female', value: 'female' },
-                { label: 'Other', value: 'other' },
-              ],
-            }}
-          />
+  return (
+    <SafeAreaView style={styles.container}>
+      {renderHeader()}
+      {renderProgressBar()}
 
-          <Field
-            control={form.control}
-            formField={{
-              name: 'password',
-              label: 'Password',
-              placeholder: 'Enter your password',
-              input_type: 'password',
-              variant: 'box',
-            }}
-          />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={{ flex: 1, position: 'relative' }}>
+          <FormStep isActive={currentStep === 0} id="step-1">
+            <View style={styles.formContainer}>
+              <Text
+                style={{
+                  fontSize: fontSizes.xxl,
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  marginBottom: spacing.xl,
+                }}
+              >
+                Let's get started
+              </Text>
 
-          <Field
-            control={form.control}
-            formField={{
-              name: 'confirm_password',
-              label: 'Confirm Password',
-              placeholder: 'Confirm your password',
-              input_type: 'password',
-              variant: 'box',
-            }}
-          />
+              <Field
+                control={form.control}
+                formField={{
+                  name: 'full_name',
+                  input_type: 'text',
+                  label: 'Full Name',
+                  placeholder: 'Enter your full name',
+                }}
+              />
 
-          <Button
-            title="Create Account"
-            onPress={handleSignup}
-            size="large"
-            style={styles.signupButton}
-          />
+              <Field
+                control={form.control}
+                formField={{
+                  name: 'email',
+                  input_type: 'text',
+                  label: 'Email',
+                  placeholder: 'Enter your email',
+                }}
+              />
+            </View>
+          </FormStep>
 
-          <View style={styles.termsContainer}>
-            <Text variant="caption" center color={colors.neutral[600]}>
-              By signing up, you agree to our Terms of Service and Privacy
-              Policy
-            </Text>
-          </View>
+          <FormStep isActive={currentStep === 1} id="step-2">
+            <View style={styles.formContainer}>
+              <Text
+                style={{
+                  fontSize: fontSizes.xxl,
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  marginBottom: spacing.xl,
+                }}
+              >
+                When's your birthday?
+              </Text>
+
+              <Field
+                control={form.control}
+                formField={{
+                  input_type: 'date',
+                  name: 'dob',
+                  label: 'Date of Birth',
+                  placeholder: 'Enter your date of birth',
+                }}
+              />
+
+              <Text
+                style={{
+                  color: colors.neutral[500],
+                  fontSize: fontSizes.xs,
+                  marginTop: spacing.m,
+                }}
+              >
+                You must be at least 18 years old to use this app.
+              </Text>
+            </View>
+          </FormStep>
+
+          <FormStep isActive={currentStep === 2} id="step-3">
+            <View style={styles.formContainer}>
+              <Text
+                style={{
+                  fontSize: fontSizes.xxl,
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  marginBottom: spacing.xl,
+                }}
+              >
+                Create a password
+              </Text>
+
+              <Field
+                control={form.control}
+                formField={{
+                  input_type: 'password',
+                  name: 'password',
+                  label: 'Password',
+                  placeholder: 'Enter your password',
+                }}
+              />
+
+              <Field
+                control={form.control}
+                formField={{
+                  input_type: 'password',
+                  name: 'confirm_password',
+                  label: 'Confirm Password',
+                  placeholder: 'Confirm your password',
+                }}
+              />
+            </View>
+          </FormStep>
+
+          {/* Step 4: Location */}
+          <FormStep isActive={currentStep === 3} id="step-4">
+            <View style={styles.formContainer}>
+              <Text
+                style={{
+                  fontSize: fontSizes.xxl,
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  marginBottom: spacing.xl,
+                }}
+              >
+                Where are you located?
+              </Text>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: spacing.s,
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <View style={{ flex: 2 }}>
+                  <Field
+                    control={form.control}
+                    formField={{
+                      name: 'location',
+                      input_type: 'text',
+                      label: 'Location',
+                      placeholder: 'Enter your location',
+                    }}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <LocationPicker setValue={form.setValue} />
+                </View>
+              </View>
+
+              <Text
+                style={{
+                  color: colors.neutral[500],
+                  fontSize: fontSizes.xs,
+                  marginTop: spacing.m,
+                }}
+              >
+                Your location helps us find matches nearby.
+              </Text>
+            </View>
+          </FormStep>
+
+          {/* Step 5: Profile Picture */}
+          <FormStep isActive={currentStep === 4} id="step-5">
+            <View style={styles.formContainer}>
+              <Text
+                style={{
+                  fontSize: fontSizes.xxl,
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  marginBottom: spacing.xl,
+                }}
+              >
+                Add a profile picture
+              </Text>
+
+              <View
+                style={{
+                  alignItems: 'center',
+                  marginBottom: spacing.xl,
+                }}
+              >
+                <View
+                  style={{
+                    width: 120,
+                    height: 120,
+                    borderRadius: 60,
+                    backgroundColor: colors.neutral[100],
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginBottom: spacing.m,
+                  }}
+                >
+                  {formData.profilePicture ? (
+                    <Image
+                      source={{ uri: formData.profilePicture }}
+                      style={{ width: 120, height: 120, borderRadius: 60 }}
+                    />
+                  ) : (
+                    <Text
+                      style={{
+                        fontSize: fontSizes.xxxl,
+                        color: colors.primary[200],
+                      }}
+                    >
+                      📷
+                    </Text>
+                  )}
+                </View>
+
+                <Field
+                  control={form.control}
+                  formField={{
+                    name: 'profile_picture',
+                    input_type: 'image',
+                  }}
+                />
+
+                <Text
+                  style={{
+                    color: colors.neutral[500],
+                    fontSize: fontSizes.s,
+                    marginTop: spacing.m,
+                    textAlign: 'center',
+                  }}
+                >
+                  Profiles with photos get more matches!
+                </Text>
+              </View>
+            </View>
+          </FormStep>
+
+          {/* Step 6: Preferences */}
+          <FormStep isActive={currentStep === 5} id="step-6">
+            <View style={styles.formContainer}>
+              <Text
+                style={{
+                  fontSize: fontSizes.xxl,
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  marginBottom: spacing.xl,
+                }}
+              >
+                Who would you like to meet?
+              </Text>
+
+              <PreferenceSelector
+                value={form.watch('preference')}
+                onChange={(preference) =>
+                  form.setValue('preference', preference)
+                }
+                options={[
+                  { value: 'men', label: 'Men' },
+                  { value: 'women', label: 'Women' },
+                  { value: 'everyone', label: 'Everyone' },
+                ]}
+              />
+
+              <Text
+                style={{
+                  fontSize: fontSizes.l,
+                  fontWeight: '600',
+                  marginTop: spacing.l,
+                  marginBottom: spacing.s,
+                  textAlign: 'center',
+                }}
+              >
+                Select Gender
+              </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  gap: 15,
+                }}
+              >
+                <PreferenceSelector
+                  value={form.watch('gender')}
+                  onChange={(gender) => form.setValue('gender', gender)}
+                  options={[
+                    { value: 'male', label: 'Male' },
+                    { value: 'female', label: 'Female' },
+                    { value: 'other', label: 'Other' },
+                  ]}
+                />
+              </View>
+            </View>
+          </FormStep>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
-  );
-}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: spacing.xxl,
-  },
-  header: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xxl + spacing.s,
-  },
-  backButton: {
-    marginBottom: spacing.l,
-  },
-  title: {
-    marginBottom: spacing.s,
-  },
-  subtitle: {
-    marginBottom: spacing.m,
-  },
-  formContainer: {
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.s,
-  },
-  errorContainer: {
-    backgroundColor: colors.error[50],
-    padding: spacing.m,
-    borderRadius: 8,
-    marginBottom: spacing.m,
-  },
-  signupButton: {
-    marginVertical: spacing.m,
-  },
-  termsContainer: {
-    marginTop: spacing.s,
-  },
-});
+      {renderFooter()}
+    </SafeAreaView>
+  );
+};
+
+export default SignUp;

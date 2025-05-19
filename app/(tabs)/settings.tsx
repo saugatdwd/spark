@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { router } from 'expo-router';
 import { colors, spacing, borderRadius } from '@/utils/theme';
@@ -6,6 +6,9 @@ import { useAuth } from '@/context/AuthContext';
 import Text from '@/components/Text';
 import Button from '@/components/Button';
 import { ArrowLeft, Bell, Shield, UserCog, Globe, CircleHelp as HelpCircle, ChevronRight, MessageCircle, MapPin, Moon, Trash2 } from 'lucide-react-native';
+import { useCustomQuery } from '@/hooks/useQuery';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserType } from '@/types/user';
 
 export default function SettingsScreen() {
   const { signOut, user } = useAuth();
@@ -13,10 +16,18 @@ export default function SettingsScreen() {
   const [darkMode, setDarkMode] = React.useState(false);
   const [locationEnabled, setLocationEnabled] = React.useState(true);
   
-  if (!user) {
-    router.replace('/(auth)/welcome');
-    return null;
-  }
+  // if (!user) {
+  //   router.replace('/(auth)/welcome');
+  //   return null;
+  // }
+
+
+
+    const {data: userDetail} = useCustomQuery<UserType>({
+      url: "/users/me"
+    }, ["/users/me"])
+    
+    console.log(userDetail?.user, "USerDetail")
   
   const handleSignOut = () => {
     signOut();
