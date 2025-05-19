@@ -23,6 +23,22 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3893442c-5088-4bba-bd6a-8d49cb928d7e"
+      }
+    },
+    "owner": "saugatdawadi",
+    "android": {
+      "package": "com.saugatdawadi.sparkdatingapp.dev"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3893442c-5088-4bba-bd6a-8d49cb928d7e"
     }
   }
 }
