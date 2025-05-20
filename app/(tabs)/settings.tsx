@@ -1,25 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Switch } from 'react-native';
-import { router } from 'expo-router';
-import { colors, spacing, borderRadius } from '@/utils/theme';
-import { useAuth } from '@/context/AuthContext';
-import Text from '@/components/Text';
 import Button from '@/components/Button';
-import { ArrowLeft, Bell, Shield, UserCog, Globe, CircleHelp as HelpCircle, ChevronRight, MessageCircle, MapPin, Moon, Trash2 } from 'lucide-react-native';
+import Text from '@/components/Text';
+import { ErrorResponse } from '@/constants/global.type';
+import { useCustomMutations } from '@/hooks/useMutations';
 import { useCustomQuery } from '@/hooks/useQuery';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserType } from '@/types/user';
+import { borderRadius, colors, spacing } from '@/utils/theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+import { ArrowLeft, Bell, ChevronRight, Globe, CircleHelp as HelpCircle, MapPin, MessageCircle, Moon, Shield, Trash2, UserCog } from 'lucide-react-native';
+import React from 'react';
+import { ScrollView, StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
 
 export default function SettingsScreen() {
-  const { signOut, user } = useAuth();
   const [notifications, setNotifications] = React.useState(true);
   const [darkMode, setDarkMode] = React.useState(false);
   const [locationEnabled, setLocationEnabled] = React.useState(true);
   
-  // if (!user) {
-  //   router.replace('/(auth)/welcome');
-  //   return null;
-  // }
 
 
 
@@ -28,9 +24,21 @@ export default function SettingsScreen() {
     }, ["/users/me"])
     
     console.log(userDetail?.user, "USerDetail")
+
+    const {mutate: logoutMutate} = useCustomMutations((client,params) =>{
+      return client.post('auth/logout', params)
+    }, {
+      onSuccess: () => {
+        AsyncStorage.removeItem('token');
+        router.replace('/(auth)/welcome');
+      },
+      onError: (error: ErrorResponse) => {
+        console.log(error.response.data.error.message || '');
+      }
+    })
   
   const handleSignOut = () => {
-    signOut();
+    logoutMutate({})
   };
   
   return (
