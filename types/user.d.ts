@@ -8,6 +8,8 @@ export interface UserType {
     role: { name: string; id: string };
     createdAt: string;
     updatedAt: string;
+    location: string;
     age: string;
+    preference: string;
   };
 }

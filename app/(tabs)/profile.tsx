@@ -4,12 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useCustomQuery } from '@/hooks/useQuery';
 import { UserType } from '@/types/user';
 import { getAvailableInterests } from '@/utils/mockData';
-import {
-  borderRadius,
-  colors,
-  spacing,
-  typography
-} from '@/utils/theme';
+import { borderRadius, colors, spacing, typography } from '@/utils/theme';
 import { router } from 'expo-router';
 import {
   Camera,
@@ -19,7 +14,7 @@ import {
   Info,
   MapPin,
   Plus,
-  Settings
+  Settings,
 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
@@ -28,7 +23,7 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -157,7 +152,6 @@ export default function ProfileScreen() {
             <TouchableOpacity
               style={styles.bioEditContainer}
               onPress={() => {
-                // Open bio edit modal/screen in a real app
                 setBio(
                   'I love hiking, photography, and trying new restaurants. Looking for someone who shares similar interests and enjoys spending time outdoors.'
                 );
@@ -287,11 +281,9 @@ export default function ProfileScreen() {
                 Looking for
               </Text>
               <Text variant="bodyBold">
-                {userDetail?.user?.gender === 'men'
-                  ? 'Men'
-                  : userDetail?.user?.gender === 'women'
-                  ? 'Women'
-                  : 'Everyone'}
+                {userDetail?.user?.preference &&
+                  userDetail.user.preference.charAt(0).toUpperCase() +
+                    userDetail.user.preference.slice(1)}
               </Text>
             </View>
           </View>
