@@ -41,7 +41,7 @@ export default function RootLayout() {
   
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
+      {/* <AuthProvider> */}
         <QueryClientProvider client={queryClient}>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
@@ -50,7 +50,7 @@ export default function RootLayout() {
         </Stack>
         <StatusBar style="auto" />
         </QueryClientProvider>
-      </AuthProvider>
+      {/* </AuthProvider> */}
     </GestureHandlerRootView>
   );
 }

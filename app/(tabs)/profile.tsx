@@ -1,21 +1,35 @@
-import React, { useState } from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  ScrollView, 
-  Image, 
-  TouchableOpacity, 
-  Dimensions,
-  Platform,
-} from 'react-native';
-import { colors, spacing, typography, borderRadius, shadows } from '@/utils/theme';
-import { useAuth } from '@/context/AuthContext';
-import Text from '@/components/Text';
 import Button from '@/components/Button';
-import { Camera, Settings, CreditCard as Edit, MapPin, Calendar, Heart, Info, Globe, Plus } from 'lucide-react-native';
-import { User } from '@/utils/types';
+import Text from '@/components/Text';
+import { useAuth } from '@/context/AuthContext';
+import { useCustomQuery } from '@/hooks/useQuery';
+import { UserType } from '@/types/user';
 import { getAvailableInterests } from '@/utils/mockData';
+import {
+  borderRadius,
+  colors,
+  spacing,
+  typography
+} from '@/utils/theme';
 import { router } from 'expo-router';
+import {
+  Camera,
+  CreditCard as Edit,
+  Globe,
+  Heart,
+  Info,
+  MapPin,
+  Plus,
+  Settings
+} from 'lucide-react-native';
+import React, { useState } from 'react';
+import {
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
 const { width } = Dimensions.get('window');
 const PHOTO_SIZE = (width - spacing.l * 2 - spacing.s * 2) / 3;
@@ -23,28 +37,39 @@ const PHOTO_SIZE = (width - spacing.l * 2 - spacing.s * 2) / 3;
 export default function ProfileScreen() {
   const { user, updateUserProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedInterests, setSelectedInterests] = useState<string[]>(user?.interests || []);
-  const [bio, setBio] = useState(user?.bio || '');
-  
-  if (!user) {
-    router.replace('/(auth)/welcome');
-    return null;
-  }
-  
-  const availableInterests = getAvailableInterests().filter(
-    interest => !selectedInterests.includes(interest)
+  const [selectedInterests, setSelectedInterests] = useState<string[]>(
+    user?.interests || []
   );
-  
+  const [bio, setBio] = useState(user?.bio || '');
+
+  const { data: userDetail } = useCustomQuery<UserType>(
+    {
+      url: '/users/me',
+    },
+    ['/users/me']
+  );
+
+  console.log(userDetail, 'USerDetail');
+
+  // if (!user) {
+  //   router.replace('/(auth)/welcome');
+  //   return null;
+  // }
+
+  const availableInterests = getAvailableInterests().filter(
+    (interest) => !selectedInterests.includes(interest)
+  );
+
   const handleAddInterest = (interest: string) => {
     if (selectedInterests.length < 5) {
       setSelectedInterests([...selectedInterests, interest]);
     }
   };
-  
+
   const handleRemoveInterest = (interest: string) => {
-    setSelectedInterests(selectedInterests.filter(i => i !== interest));
+    setSelectedInterests(selectedInterests.filter((i) => i !== interest));
   };
-  
+
   const handleSaveProfile = () => {
     // In a real app, this would be an API call
     updateUserProfile({
@@ -53,59 +78,59 @@ export default function ProfileScreen() {
     });
     setIsEditing(false);
   };
-  
+
   const toggleEdit = () => {
     if (isEditing) {
       // Discard changes
-      setSelectedInterests(user.interests);
-      setBio(user.bio);
+      setSelectedInterests(user?.interests);
+      setBio(user?.bio);
     }
     setIsEditing(!isEditing);
   };
-  
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text variant="heading2">Profile</Text>
-        
-        <TouchableOpacity 
-          style={styles.settingsButton} 
+
+        <TouchableOpacity
+          style={styles.settingsButton}
           onPress={() => router.push('/(tabs)/settings')}
         >
           <Settings size={24} color={colors.neutral[800]} />
         </TouchableOpacity>
       </View>
-      
-      <ScrollView 
+
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.profileHeader}>
           <Image
-            source={{ uri: user.photos[0] }}
+            source={{ uri: user?.photos[0] || 'https://picsum.photos/200/300' }}
             style={styles.profilePhoto}
           />
-          
+
           <View style={styles.profileInfo}>
             <Text variant="heading3">
-              {user.name}, {user.age}
+              {userDetail?.user?.name}, {userDetail?.user?.age}
             </Text>
-            
+
             <View style={styles.locationContainer}>
               <MapPin size={16} color={colors.neutral[600]} />
               <Text variant="body" color={colors.neutral[600]}>
-                {user.location}
+                {userDetail?.user?.location || 'New York, NY'}
               </Text>
             </View>
-            
-            <TouchableOpacity 
-              style={styles.editButton} 
-              onPress={toggleEdit}
-            >
-              <Edit size={16} color={isEditing ? colors.error[500] : colors.primary[600]} />
-              <Text 
-                variant="bodyBold" 
+
+            <TouchableOpacity style={styles.editButton} onPress={toggleEdit}>
+              <Edit
+                size={16}
+                color={isEditing ? colors.error[500] : colors.primary[600]}
+              />
+              <Text
+                variant="bodyBold"
                 color={isEditing ? colors.error[500] : colors.primary[600]}
               >
                 {isEditing ? 'Cancel' : 'Edit Profile'}
@@ -113,40 +138,49 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
         </View>
-        
+
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleContainer}>
               <Info size={18} color={colors.neutral[700]} />
               <Text variant="heading3">About Me</Text>
             </View>
-            
+
             {isEditing && (
               <TouchableOpacity style={styles.editBioButton}>
                 <Edit size={16} color={colors.primary[600]} />
               </TouchableOpacity>
             )}
           </View>
-          
+
           {isEditing ? (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.bioEditContainer}
               onPress={() => {
                 // Open bio edit modal/screen in a real app
-                setBio('I love hiking, photography, and trying new restaurants. Looking for someone who shares similar interests and enjoys spending time outdoors.');
+                setBio(
+                  'I love hiking, photography, and trying new restaurants. Looking for someone who shares similar interests and enjoys spending time outdoors.'
+                );
               }}
             >
-              <Text variant="body" color={bio ? colors.neutral[800] : colors.neutral[400]}>
+              <Text
+                variant="body"
+                color={bio ? colors.neutral[800] : colors.neutral[400]}
+              >
                 {bio || 'Tap to add a bio'}
               </Text>
             </TouchableOpacity>
           ) : (
-            <Text variant="body" color={colors.neutral[800]} style={styles.bioText}>
+            <Text
+              variant="body"
+              color={colors.neutral[800]}
+              style={styles.bioText}
+            >
               {bio || 'No bio yet'}
             </Text>
           )}
         </View>
-        
+
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleContainer}>
@@ -154,25 +188,27 @@ export default function ProfileScreen() {
               <Text variant="heading3">Interests</Text>
             </View>
           </View>
-          
+
           <View style={styles.interestsContainer}>
             {selectedInterests.map((interest) => (
               <View key={interest} style={styles.interestTag}>
                 <Text variant="caption" color={colors.primary[700]}>
                   {interest}
                 </Text>
-                
+
                 {isEditing && (
                   <TouchableOpacity
                     style={styles.removeInterestButton}
                     onPress={() => handleRemoveInterest(interest)}
                   >
-                    <Text variant="caption" color={colors.error[500]}>×</Text>
+                    <Text variant="caption" color={colors.error[500]}>
+                      ×
+                    </Text>
                   </TouchableOpacity>
                 )}
               </View>
             ))}
-            
+
             {isEditing && selectedInterests.length < 5 && (
               <TouchableOpacity
                 style={styles.addInterestButton}
@@ -191,14 +227,14 @@ export default function ProfileScreen() {
             )}
           </View>
         </View>
-        
+
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleContainer}>
               <Camera size={18} color={colors.neutral[700]} />
               <Text variant="heading3">Photos</Text>
             </View>
-            
+
             {isEditing && (
               <TouchableOpacity style={styles.editPhotosButton}>
                 <Edit size={16} color={colors.primary[600]} />
@@ -208,22 +244,22 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             )}
           </View>
-          
-          <View style={styles.photosGrid}>
+
+          {/* <View style={styles.photosGrid}>
             {user.photos.map((photo, index) => (
               <View key={index} style={styles.photoContainer}>
                 <Image source={{ uri: photo }} style={styles.photo} />
               </View>
             ))}
-            
+
             {isEditing && user.photos.length < 6 && (
               <TouchableOpacity style={styles.addPhotoButton}>
                 <Plus size={24} color={colors.neutral[400]} />
               </TouchableOpacity>
             )}
-          </View>
+          </View> */}
         </View>
-        
+
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleContainer}>
@@ -231,32 +267,36 @@ export default function ProfileScreen() {
               <Text variant="heading3">Preferences</Text>
             </View>
           </View>
-          
+
           <View style={styles.preferencesContainer}>
             <View style={styles.preferenceItem}>
               <Text variant="body" color={colors.neutral[700]}>
                 I am
               </Text>
               <Text variant="bodyBold">
-                {user.gender === 'male' ? 'Man' : user.gender === 'female' ? 'Woman' : 'Non-binary'}
+                {userDetail?.user?.gender === 'male'
+                  ? 'Man'
+                  : userDetail?.user?.gender === 'female'
+                  ? 'Woman'
+                  : 'Non-binary'}
               </Text>
             </View>
-            
+
             <View style={styles.preferenceItem}>
               <Text variant="body" color={colors.neutral[700]}>
                 Looking for
               </Text>
               <Text variant="bodyBold">
-                {user.lookingFor === 'men' 
-                  ? 'Men' 
-                  : user.lookingFor === 'women' 
-                    ? 'Women' 
-                    : 'Everyone'}
+                {userDetail?.user?.gender === 'men'
+                  ? 'Men'
+                  : userDetail?.user?.gender === 'women'
+                  ? 'Women'
+                  : 'Everyone'}
               </Text>
             </View>
           </View>
         </View>
-        
+
         {isEditing && (
           <Button
             title="Save Profile"
